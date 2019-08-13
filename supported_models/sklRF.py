@@ -74,15 +74,17 @@ def node2csp_atomic( node, modelID, attributeNames, constraintDictionary ):
 			modelID,
 			attributeNames[node['attribute_number']]
 		))
-		ruleAssertions = ['(assert (! (= r%d_m%d (<= %s t%d_m%d)) :named R%d-M%d)); rule' % (
+		#ruleAssertions = ['(assert (! (= r%d_m%d (<= %s t%d_m%d)) :named R%d-M%d)); rule' % (
+		ruleAssertions = ['(assert (= r%d_m%d (<= %s t%d_m%d))); rule' % (
 			node['node_id'],
 			modelID,
 			attributeNames[node['attribute_number']],
 			node['node_id'],
-			modelID,
-			node['node_id'],
 			modelID
 		)]
+			#node['node_id'],
+			#modelID
+		#)]
 	else:
 		#leafAssertions = ['(assert (! (=> b%d_m%d (and (= ensemblePredictionArray (store ensemblePredictionArray %d %d)) (= p_m%d %s))) :named L%d-M%d)); leaf' % (
 			#node['node_id'],
