@@ -94,10 +94,10 @@ class Z3:
 		return [assertRA]
 
 	def declare_function_max_of_array( self ):
-		return ['(declare-fun consensus (Int) Int)','(assert (= (consensus -1) -1))']
+		return ['(declare-fun consensus (Int) Int)','(assert (= (consensus 0) 0))']
 
 	def assert_function_max_of_array( self ):
-		bounds = '(and (>= iconsensus 0) (<= iconsensus %d))' % (len(self.dataSet.targetMap)-1)
+		bounds = '(and (> iconsensus 0) (<= iconsensus %d))' % (len(self.dataSet.targetMap)-1)
 		check = '(> (select ensembleVotes iconsensus) (select ensembleVotes (- iconsensus 1)))'
 		fi = '(= (consensus iconsensus) iconsensus)'#i'm saving the index
 		esle = '(= (consensus iconsensus) (consensus (- iconsensus 1)))'

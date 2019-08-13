@@ -66,7 +66,7 @@ def node2csp_atomic( node, modelID, attributeNames, constraintDictionary ):
 	if not node['is_leaf']:
 		ruleDeclarations.append('(declare-const r%d_m%d Bool)' % ( node['node_id'], modelID ))
 		thresholdDeclarations.append('(declare-const t%d_m%d Real)' % (node['node_id'], modelID ))
-		thresholdAssertions.append('(assert (! (= t%d_m%d %.2f) :named tag-t%d-m%d)); %s threshold' % (
+		thresholdAssertions.append('(assert (! (= t%d_m%d %.2f) :named T%d-M%d)); %s threshold' % (
 			node['node_id'],
 			modelID,
 			node['threshold'],
@@ -74,7 +74,7 @@ def node2csp_atomic( node, modelID, attributeNames, constraintDictionary ):
 			modelID,
 			attributeNames[node['attribute_number']]
 		))
-		ruleAssertions = ['(assert (! (= r%d_m%d (<= %s t%d_m%d)) :named tag-r%d-m%d)); rule' % (
+		ruleAssertions = ['(assert (! (= r%d_m%d (<= %s t%d_m%d)) :named R%d-M%d)); rule' % (
 			node['node_id'],
 			modelID,
 			attributeNames[node['attribute_number']],
@@ -84,7 +84,7 @@ def node2csp_atomic( node, modelID, attributeNames, constraintDictionary ):
 			modelID
 		)]
 	else:
-		#leafAssertions = ['(assert (! (=> b%d_m%d (and (= ensemblePredictionArray (store ensemblePredictionArray %d %d)) (= p_m%d %s))) :named tag-l%d-m%d)); leaf' % (
+		#leafAssertions = ['(assert (! (=> b%d_m%d (and (= ensemblePredictionArray (store ensemblePredictionArray %d %d)) (= p_m%d %s))) :named L%d-M%d)); leaf' % (
 			#node['node_id'],
 			#modelID,
 			#modelID,
@@ -94,7 +94,7 @@ def node2csp_atomic( node, modelID, attributeNames, constraintDictionary ):
 			#node['node_id'],
 			#modelID
 		#)]
-		leafAssertions = ['(assert (! (=> b%d_m%d (= p_m%d %s)) :named tag-l%d-m%d)); leaf' % (
+		leafAssertions = ['(assert (! (=> b%d_m%d (= p_m%d %s)) :named L%d-M%d)); leaf' % (
 			node['node_id'],
 			modelID,
 			modelID,
@@ -106,25 +106,33 @@ def node2csp_atomic( node, modelID, attributeNames, constraintDictionary ):
 
 	if 'left_child' in node.keys():
 		branchDeclarations.append('(declare-const b%d_m%d Bool)' % (node['left_child']['node_id'],modelID))
-		branchAssertions.append('(assert (! (= b%d_m%d (and b%d_m%d r%d_m%d)) :named tag-b%d-m%d)); branch' % (
+		#branchAssertions.append('(assert (! (= b%d_m%d (and b%d_m%d r%d_m%d)) :named B%d-M%d)); branch' % (
+		branchAssertions.append('(assert (= b%d_m%d (and b%d_m%d r%d_m%d))); branch' % (
 			node['left_child']['node_id'],
 			modelID,
 			node['node_id'],
-			modelID,node['node_id'],
-			modelID,node['left_child']['node_id'],
+			modelID,
+			node['node_id'],
 			modelID
 		))
+			#node['left_child']['node_id'],
+			#modelID
+		#))
 		leftSubTree = node2csp_atomic( node['left_child'], modelID, attributeNames, make_empty_constraint_dictionary() )
 	if 'right_child' in node.keys():
 		branchDeclarations.append('(declare-const b%d_m%d Bool)' % (node['right_child']['node_id'],modelID))
-		branchAssertions.append('(assert (! (= b%d_m%d (and b%d_m%d (not r%d_m%d))) :named tag-b%d-m%d)); branch' % (
+		#branchAssertions.append('(assert (! (= b%d_m%d (and b%d_m%d (not r%d_m%d))) :named B%d-M%d)); branch' % (
+		branchAssertions.append('(assert (= b%d_m%d (and b%d_m%d (not r%d_m%d)))); branch' % (
 			node['right_child']['node_id'],
 			modelID,
 			node['node_id'],
-			modelID,node['node_id'],
-			modelID,node['right_child']['node_id'],
+			modelID,
+			node['node_id'],
 			modelID
 		))
+			#node['right_child']['node_id'],
+			#modelID
+		#))
 		rightSubTree = node2csp_atomic( node['right_child'], modelID, attributeNames, make_empty_constraint_dictionary() )
 
 	constraintDictionary = add_to_constraint_dictionary(
