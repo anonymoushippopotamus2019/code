@@ -1,4 +1,5 @@
 from itertools import chain
+from subprocess import Popen
 
 class Z3:
 
@@ -93,11 +94,11 @@ class Z3:
 		return [assertRA]
 
 	def declare_function_max_of_array( self ):
-		return ['(declare-fun consensus (Int) Int)','(assert (= (consensus -1) 0))']
+		return ['(declare-fun consensus (Int) Int)','(assert (= (consensus -1) -1))']
 
 	def assert_function_max_of_array( self ):
 		bounds = '(and (>= iconsensus 0) (<= iconsensus %d))' % (len(self.dataSet.targetMap)-1)
-		check = '(> (select ensembleVotes iconsensus) (consensus (- iconsensus 1)))'
+		check = '(> (select ensembleVotes iconsensus) (select ensembleVotes (- iconsensus 1)))'
 		fi = '(= (consensus iconsensus) iconsensus)'#i'm saving the index
 		esle = '(= (consensus iconsensus) (consensus (- iconsensus 1)))'
 		return ['(assert (forall ((iconsensus Int)) (=> %s (ite %s %s %s))))'%(bounds, check, fi, esle),self.declare_tag('consensus'),self.assert_tag('consensus',len(self.dataSet.targetMap)-1)]
@@ -125,6 +126,13 @@ class Z3:
 	def conclude( self ):
 		return ['(check-sat)','(get-unsat-core)','(get-model)','(exit)']
 
+#********** Run Scripts **********
 
-#********** Array Ops **********
-	
+def script2file( fileName, script ):
+	filePointer = open(fileName+'.smt2', 'w')
+	for constraint in script:
+		filePointer.write(constraint+'\n')
+	filePointer.close()
+
+def run_z3_script( z3_script, postfix ):
+	Popen(['z3',z3_script+'.smt2'],stdout=open(z3_script+postfix,'w'))
