@@ -1,5 +1,7 @@
 from itertools import chain
 from subprocess import Popen
+from re import sub
+from re import split
 
 class Z3:
 
@@ -17,7 +19,7 @@ class Z3:
 		self.queryDict = queryDict
 		constraints = []
 		for key in queryDict.keys():
-			constraints.append('(assert (! (= %s %s) :named %s));'%(key,queryDict[key],key+'='+str(queryDict[key])))
+			constraints.append('(assert (! (= %s %s) :named %s));'%(key,queryDict[key],key+'Equals'+str(queryDict[key])))
 		return constraints
 
 	def declare_query_target( self ):
@@ -135,4 +137,43 @@ def script2file( fileName, script ):
 	filePointer.close()
 
 def run_z3_script( z3_script, postfix ):
-	Popen(['z3',z3_script+'.smt2'],stdout=open(z3_script+postfix,'w'))
+	p = Popen(['z3',z3_script+'.smt2'],stdout=open(z3_script+postfix,'w'))
+	p.communicate()
+
+def load_sat_model( fileName ):
+	filePointer = open( fileName, 'r' )
+	fileContent = filePointer.read()
+	filePointer.close()
+
+	fileContent = sub('\n','',fileContent)
+	fileContent = split('unsat',fileContent)[0]
+	fileContent = split('define-fun ',fileContent)
+	fileContent = [fileContent[idx].strip('( ').split() for idx in range(len(fileContent)) if '!' not in fileContent[idx]]
+	model = {}
+	for lineIdx in range(1,len(fileContent)):
+		if fileContent[lineIdx][2] == 'Bool':
+			model[fileContent[lineIdx][0]] = True if fileContent[lineIdx][3]=='true)' else False
+		elif fileContent[lineIdx][2] == 'Real':
+			if fileContent[lineIdx][3] == '(/':
+				model[fileContent[lineIdx][0]] = float(fileContent[lineIdx][4])/float(fileContent[lineIdx][5].strip(')'))
+			elif fileContent[lineIdx][3] == '-':
+				if fileContent[lineIdx][4] == '(/':
+					model[fileContent[lineIdx][0]] = -float(fileContent[lineIdx][5])/float(fileContent[lineIdx][6].strip(')'))
+				else:
+					model[fileContent[lineIdx][0]] = -float(fileContent[lineIdx][4].strip(')'))
+			else:#next element is real number
+				model[fileContent[lineIdx][0]] = float(fileContent[lineIdx][3].strip(')'))
+		elif fileContent[lineIdx][2] == '(Array':
+			model[fileContent[lineIdx][0]] = '('+' '.join(fileContent[lineIdx][2:])
+
+	return model
+
+
+def load_unsat_core( fileName ):
+	filePointer = open( fileName, 'r' )
+	fileContent = filePointer.read()
+	filePointer.close()
+	fileContent = sub('\n','',fileContent)
+	fileContent = split('unsat',fileContent)[-1]
+	fileContent = split('\(error',fileContent)[0]
+	return fileContent.strip('()').split()
