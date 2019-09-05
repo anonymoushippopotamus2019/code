@@ -27,9 +27,10 @@ class SciKitLearnRF:
 	def model2csp_functions( self ):
 		modelFunctions = []
 		for modelID in range(self.get_number_of_models()):
-			functionString = '(define-fun m%d (' % ( modelID )
-			for attID in range(self.dataSet.get_number_of_attributes()):
-				functionString += ' (att%d Real)' % attID
+			functionString = '(define-fun quantified_m%d (' % ( modelID )
+			functionString += '(sample_attributes (Array Int Real))'
+			#for attID in range(self.dataSet.get_number_of_attributes()):
+				#functionString += ' (att%d Real)' % attID
 			functionString += ') Real '
 			modelFunctions.append( node2csp_function( self.modelDictionary[modelID], modelID, functionString )+')' )
 		self.modelAsFunctions = modelFunctions
@@ -66,7 +67,7 @@ def node2csp_atomic( node, modelID, attributeNames, constraintDictionary ):
 	if not node['is_leaf']:
 		ruleDeclarations.append('(declare-const r%d_m%d Bool)' % ( node['node_id'], modelID ))
 		thresholdDeclarations.append('(declare-const t%d_m%d Real)' % (node['node_id'], modelID ))
-		thresholdAssertions.append('(assert (! (= t%d_m%d %.2f) :named T%d-M%d)); %s threshold' % (
+		thresholdAssertions.append('(assert (! (= t%d_m%d %.2f) :named -T%d-M%d)); %s threshold' % (
 			node['node_id'],
 			modelID,
 			node['threshold'],
@@ -75,12 +76,13 @@ def node2csp_atomic( node, modelID, attributeNames, constraintDictionary ):
 			attributeNames[node['attribute_number']]
 		))
 		#ruleAssertions = ['(assert (! (= r%d_m%d (<= %s t%d_m%d)) :named R%d-M%d)); rule' % (
-		ruleAssertions = ['(assert (= r%d_m%d (<= %s t%d_m%d))); rule' % (
+		ruleAssertions = ['(assert (= r%d_m%d (<= %s t%d_m%d))); rule %.2f' % (
 			node['node_id'],
 			modelID,
 			attributeNames[node['attribute_number']],
 			node['node_id'],
-			modelID
+			modelID,
+			node['threshold']
 		)]
 			#node['node_id'],
 			#modelID
@@ -96,7 +98,7 @@ def node2csp_atomic( node, modelID, attributeNames, constraintDictionary ):
 			#node['node_id'],
 			#modelID
 		#)]
-		leafAssertions = ['(assert (! (=> b%d_m%d (= p_m%d %s)) :named L%d-M%d)); leaf' % (
+		leafAssertions = ['(assert (! (=> b%d_m%d (= p_m%d %s)) :named -L%d-M%d)); leaf' % (
 			node['node_id'],
 			modelID,
 			modelID,
@@ -182,7 +184,7 @@ def add_to_constraint_dictionary( constraintDictionary, thresholdD, ruleD, branc
 
 def node2csp_function( node, modelID, functionString ):
 	if not node['is_leaf']:
-		functionString += '(ite (<= att%d t%d_m%d) %s %s)' % (
+		functionString += '(ite (<= (select sample_attributes %d) t%d_m%d) %s %s)' % (
 			node['attribute_number'],
 			node['node_id'],
 			modelID,
