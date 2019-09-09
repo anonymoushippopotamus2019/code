@@ -161,11 +161,11 @@ class Z3:
 
 #*********** Objectives **********
 	def assert_maximal_confusion( self ):
-		constraint='(assert (and'
+		constraint='(assert '
 		for idx1 in range(len(self.dataSet.targetMap)):
 			for idx2 in range(idx1+1,len(self.dataSet.targetMap)):
 				constraint += ' (= C%d_count_eval C%d_count_eval)'%(idx1,idx2)
-		return [constraint+'))']
+		return [constraint+')']
 
 	def get_training_predictions_from_each_model( self ):
 		declarations=[]

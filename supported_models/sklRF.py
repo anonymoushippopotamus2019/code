@@ -67,7 +67,7 @@ def node2csp_atomic( node, modelID, attributeNames, constraintDictionary ):
 	if not node['is_leaf']:
 		ruleDeclarations.append('(declare-const r%d_m%d Bool)' % ( node['node_id'], modelID ))
 		thresholdDeclarations.append('(declare-const t%d_m%d Real)' % (node['node_id'], modelID ))
-		thresholdAssertions.append('(assert (! (= t%d_m%d %.2f) :named -T%d-M%d)); %s threshold' % (
+		thresholdAssertions.append('(assert (! (= t%d_m%d %.2f) :named T%d-M%d)); %s threshold' % (
 			node['node_id'],
 			modelID,
 			node['threshold'],
@@ -98,7 +98,7 @@ def node2csp_atomic( node, modelID, attributeNames, constraintDictionary ):
 			#node['node_id'],
 			#modelID
 		#)]
-		leafAssertions = ['(assert (! (=> b%d_m%d (= p_m%d %s)) :named -L%d-M%d)); leaf' % (
+		leafAssertions = ['(assert (! (=> b%d_m%d (= p_m%d %s)) :named L%d-M%d)); leaf' % (
 			node['node_id'],
 			modelID,
 			modelID,
